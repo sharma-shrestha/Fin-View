@@ -47,20 +47,12 @@ const GoogleLogin = () => {
       // ✅ Save user in Redux
       dispatch(setUser(data.user));
 
-      if (data.user.role === "admin") {
-        // Admin → straight to admin dashboard
-        navigate("/admin");
+     if (data.user.role === "user") {
+        navigate("/Success");
       } else {
-        // Normal user
-        if (!data.user.roomNumber || !data.user.phoneNumber) {
-          // profile incomplete → show popup
-          setShowProfilePopup(true);
-        } else {
-          // profile complete → straight to dashboard
-          navigate("/dashboard");
-        }
+        navigate("/register");
       }
-
+      
       showToast("success", data.message);
     } catch (err) {
       showToast("error", err.message || "Server error");
@@ -73,7 +65,7 @@ const GoogleLogin = () => {
     <>
       <Button
         variant="outline"
-        className="w-full flex items-center justify-center gap-2"
+        className="w-full flex items-center justify-center bg-black gap-2"
         onClick={handleLogin}
       >
         <FcGoogle />

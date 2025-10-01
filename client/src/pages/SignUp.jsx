@@ -56,7 +56,7 @@ const SignUp = () => {
       }
 
       showToast("success", data.message);
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       showToast("error", err.message || "Server error");
     }
@@ -161,7 +161,7 @@ const SignUp = () => {
         </Form>
         <p className="text-sm text-gray-300 mb-5 text-center">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-400 hover:underline">
+          <Link to="/" className="text-blue-400 hover:underline">
             Login
           </Link>
         </p>

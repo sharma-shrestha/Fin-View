@@ -62,7 +62,7 @@ const SignIn = () => {
       dispatch(setUser(data.user));
 
       if (data.user.role === "user") {
-        navigate("/dashboard");
+        navigate("/Success");
       } else {
         navigate("/register");
       }
@@ -159,7 +159,7 @@ const SignIn = () => {
         {/* Signup Link */}
         <p className="text-xs mb-4 text-gray-300">
           New to DormDash?{" "}
-          <Link to="/" className="text-blue-400 hover:underline">
+          <Link to="/register" className="text-blue-400 hover:underline">
             Create an account
           </Link>
         </p>
