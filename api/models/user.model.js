@@ -24,10 +24,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  roomNumber: {
-    type: String,
-    trim: true,
-  },
   phone: {
     type: String,
     trim: true,
@@ -36,35 +32,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  altPhone: {
+  resetOtp: {
     type: String,
-    trim: true
+    trim: true,
   },
-  dob: {
-    type: String,
-    trim: true
-  },
-state: { 
-    type: String,
-    trim: true
-},
-city: {
-    type: String,
-    trim: true
-},
-emergencyContactName: {
-    type: String,
-    trim: true
-},
-emergencyContactNumber: {
-    type: String,
-    trim: true
-},
-  resetToken:{
-    type: String, 
-    trim: true
-  },
-  resetTokenExpiry: {
+  resetOtpExpiry: {
     type: Date,
     trim: true
   },
