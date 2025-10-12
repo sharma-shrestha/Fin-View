@@ -1,5 +1,5 @@
-// src/pages/BudgetOnboardingSinglePage.jsx
 import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -44,20 +44,17 @@ import { Separator } from "@/components/ui/separator";
 
 import {
   ChevronLeft,
-  ChevronRight,
   Wallet,
   Pencil,
   CheckCircle2,
   MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import { getEnv } from "@/helpers/getEnv";
 
+// ===== Helper functions =====
 const currency = (n) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(n) ? n : 0);
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number.isFinite(n) ? n : 0);
 
 const SECTION_BG = "bg-[#0f172a]";
 const PANEL_BG = "bg-[#111827]";
@@ -81,22 +78,21 @@ const DEFAULT_CATEGORIES = [
   { key: "transport", name: "Transportation", pct: 2 },
   { key: "dining", name: "Dining Out", pct: 8 },
   { key: "entertainment", name: "Entertainment", pct: 6 },
-  { key: "subscriptions", name: "Subscriptions", pct: 20 },
+  { key: "subscriptions", name: "Subscriptions", pct: 6 },
   { key: "health", name: "Healthcare", pct: 4 },
-  { key: "investments", name: "Investments", pct: 20 },
+  { key: "investments", name: "Investments", pct: 6 },
 ];
 
+// ===== API Helpers =====
 async function getCurrentUser() {
   try {
-    const res = await fetch(`${getEnv("VITE_API_URL")}/users/me`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const res = await fetch(`${getEnv("VITE_API_URL")}/users/me`, { credentials: "include" });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Failed to fetch user");
     return data.user;
   } catch (err) {
     console.error(err);
+    return null;
   }
 }
 
@@ -105,7 +101,7 @@ async function saveBudgetToBackend(budget) {
     const res = await fetch(`${getEnv("VITE_API_URL")}/budget/save`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // important for cookies/session
+      credentials: "include",
       body: JSON.stringify(budget),
     });
     const data = await res.json();
@@ -119,12 +115,9 @@ async function saveBudgetToBackend(budget) {
 
 async function fetchBudgetFromBackend(month, year) {
   try {
-    const res = await fetch(`${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const res = await fetch(`${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`, { credentials: "include" });
     const data = await res.json();
-    if (!res.ok) return null; // no budget found
+    if (!res.ok) return null;
     return data.budget;
   } catch (err) {
     console.error(err);
@@ -132,7 +125,10 @@ async function fetchBudgetFromBackend(month, year) {
   }
 }
 
+// ===== Main Component =====
 export default function BudgetOnboardingSinglePage() {
+  const navigate = useNavigate();
+
   const [activeStep, setActiveStep] = useState(1);
   const [rule, setRule] = useState(DEFAULT_RULE.key);
   const [customSplits, setCustomSplits] = useState({ needs: 0, wants: 0, savings: 0 });
@@ -140,28 +136,41 @@ export default function BudgetOnboardingSinglePage() {
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [user, setUser] = useState(null);
 
+  const [planName, setPlanName] = useState("");
+  const [totalBudget, setTotalBudget] = useState(24000);
+  const [customCategories, setCustomCategories] = useState([
+    { id: Date.now(), name: "Rent", limit: 15000 },
+    { id: Date.now() + 1, name: "Groceries", limit: 6000 },
+    { id: Date.now() + 2, name: "Utilities", limit: 3000 },
+  ]);
+
   useEffect(() => {
     async function init() {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
 
-      // ✅ auto-fetch this month/year budget if exists
       const today = new Date();
       const budget = await fetchBudgetFromBackend(today.getMonth() + 1, today.getFullYear());
       if (budget) {
         setIncome(budget.income);
-        setRule(budget.rule);
-        setCustomSplits(budget.customSplits);
-        setCategories(budget.categories);
+        setRule(budget.rule || DEFAULT_RULE.key);
+        setCustomSplits(budget.customSplits || { needs: 0, wants: 0, savings: 0 });
+        setCategories(budget.categories?.length ? budget.categories : DEFAULT_CATEGORIES);
+      } else {
+        setCategories(DEFAULT_CATEGORIES);
       }
     }
     init();
   }, []);
 
-  const selectedRule =
-    rule === "custom"
-      ? { key: "custom", name: "Custom Rule", splits: customSplits }
-      : DEFAULT_RULE;
+  // auto-load default categories when selecting recommended rule
+  useEffect(() => {
+    if (rule === "50-30-20") {
+      setCategories(DEFAULT_CATEGORIES);
+    }
+  }, [rule]);
+
+  const selectedRule = rule === "custom" ? { key: "custom", name: "Custom Rule", splits: customSplits } : DEFAULT_RULE;
 
   const totals = useMemo(() => {
     const needs = Math.round((selectedRule.splits.needs / 100) * income);
@@ -187,50 +196,96 @@ export default function BudgetOnboardingSinglePage() {
     [totals]
   );
 
-  const progressByStep = (s) => (s === 1 ? 25 : s === 2 ? 50 : s === 3 ? 75 : 100);
+  const progressByStep = (s) => [0, 20, 40, 40, 70, 100][s] || 0;
 
   const setPct = (key, newPct) => {
     const pct = Math.max(0, Math.min(100, Number(newPct) || 0));
     setCategories((prev) => prev.map((c) => (c.key === key ? { ...c, pct } : c)));
   };
 
-  const categoriesPctSum = useMemo(
-    () => categories.reduce((acc, c) => acc + (Number(c.pct) || 0), 0),
-    [categories]
-  );
+  const categoriesPctSum = useMemo(() => categories.reduce((acc, c) => acc + (Number(c.pct) || 0), 0), [categories]);
   const remainingPct = 100 - categoriesPctSum;
 
+  const customSum = useMemo(() => customCategories.reduce((s, c) => s + (Number(c.limit) || 0), 0), [customCategories]);
+  const addCustomCategory = () => setCustomCategories((prev) => [...prev, { id: Date.now() + Math.random(), name: "", limit: 0 }]);
+  const removeCustomCategory = (id) => setCustomCategories((prev) => prev.filter((c) => c.id !== id));
+  const updateCustomCategory = (id, key, value) => setCustomCategories((prev) => prev.map((c) => (c.id === id ? { ...c, [key]: value } : c)));
+
+  const ESSENTIAL_KEYWORDS = ["rent", "grocery", "grocer", "utilit", "health", "transport", "medicine", "loan"];
+
+  const deriveSplitsFromCustom = (incomeVal, cats) => {
+    const inc = Number(incomeVal) || 0;
+    const needsSum = cats.filter(c => ESSENTIAL_KEYWORDS.some(k => c.name?.toLowerCase().includes(k))).reduce((s,c) => s + (Number(c.limit)||0),0);
+    const wantsSum = cats.filter(c => !ESSENTIAL_KEYWORDS.some(k => c.name?.toLowerCase().includes(k))).reduce((s,c) => s + (Number(c.limit)||0),0);
+    let needsPct = inc ? Math.round((needsSum/inc)*100) : 0;
+    let wantsPct = inc ? Math.round((wantsSum/inc)*100) : 0;
+    let savingsPct = Math.max(0, 100 - (needsPct + wantsPct));
+
+    if (needsPct + wantsPct + savingsPct > 100) {
+      const scale = 100 / (needsPct + wantsPct + savingsPct);
+      needsPct = Math.round(needsPct*scale);
+      wantsPct = Math.round(wantsPct*scale);
+      savingsPct = 100 - (needsPct + wantsPct);
+    }
+
+    return { needs: needsPct, wants: wantsPct, savings: savingsPct };
+  };
+
   const gotoNext = async () => {
-    if (activeStep === 4) return;
-    // ✅ At final step (Step 3 → Step 4), save budget
-    if (activeStep === 3) {
+    if (rule !== "custom") {
+      if (activeStep === 1) return setActiveStep(2);
+      if (activeStep === 2) {
+        setCategories(DEFAULT_CATEGORIES);
+        return setActiveStep(4);
+      }
+    } else {
+      if (activeStep === 1) return setActiveStep(3);
+      if (activeStep === 3) {
+        const inc = Number(totalBudget) || 0;
+        if (inc <= 0) return alert("Please enter a valid total budget.");
+        if (!customCategories.length) return alert("Please add at least one category.");
+
+        const newCats = customCategories.map((c, idx) => ({
+          key: (c.name || `cat-${idx}`).toLowerCase().replace(/\s+/g, "-") + "-" + idx,
+          name: c.name || `Category ${idx + 1}`,
+          pct: Math.round(((Number(c.limit)||0)/inc)*100),
+        }));
+
+        setIncome(inc);
+        setCategories([...DEFAULT_CATEGORIES, ...newCats]);
+        setCustomSplits(deriveSplitsFromCustom(inc, customCategories));
+        setRule("custom");
+        return setActiveStep(4);
+      }
+    }
+
+    if (activeStep === 4) {
       const today = new Date();
       const payload = {
-        title: `${today.toLocaleString("default", { month: "long" })} ${today.getFullYear()} Budget`,
+        title: `${today.toLocaleString("default",{month:"long"})} ${today.getFullYear()} Budget`,
         income,
         rule,
         customSplits,
         totals,
         categories,
-        period: { month: today.getMonth() + 1, year: today.getFullYear() },
+        period: { month: today.getMonth()+1, year: today.getFullYear() },
       };
       await saveBudgetToBackend(payload);
+      return setActiveStep(5);
     }
-    setActiveStep((s) => Math.min(4, s + 1));
   };
 
-  const gotoPrev = () => setActiveStep((s) => Math.max(1, s - 1));
+  const gotoPrev = () => {
+    if ([2,3].includes(activeStep)) return setActiveStep(1);
+    if (activeStep === 4) return setActiveStep(rule==="custom"?3:2);
+    if (activeStep === 5) return setActiveStep(4);
+    return setActiveStep((s)=>Math.max(1,s-1));
+  };
 
   const StepHeader = ({ step, title }) => (
     <div className="mb-4">
       <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-slate-300 hover:text-white"
-          onClick={gotoPrev}
-          disabled={activeStep === 1}
-        >
+        <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white" onClick={gotoPrev} disabled={activeStep===1}>
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-green-400 text-xl font-semibold">{title}</h2>
@@ -242,60 +297,42 @@ export default function BudgetOnboardingSinglePage() {
     </div>
   );
 
+  // ---------- JSX ----------
   return (
     <div className={`${SECTION_BG} min-h-screen w-full py-8 px-4 md:px-8`}>
-      <div className="mx-auto max-w-6xl space-y-10 b">
-        {/* -------- STEP 1 -------- */}
-        {activeStep === 1 && (
-          <section id="step1">
+      <div className="mx-auto max-w-6xl space-y-10">
+        {/* STEP 1 */}
+        {activeStep===1 && (
+          <section>
             <StepHeader step={1} title="Let’s set up your account" />
             <Card className={`${PANEL_BG} border-slate-400`}>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                  {/* Wallet Icon */}
-                  <div className="col-span-1 flex items-center justify-center">
-                    <div className="h-28 w-full rounded-xl bg-slate-800/60 flex items-center justify-center">
-                      <Wallet className="h-12 w-20 text-slate-300" />
-                    </div>
+              <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div className="col-span-1 flex items-center justify-center">
+                  <div className="h-28 w-full rounded-xl bg-slate-800/60 flex items-center justify-center">
+                    <Wallet className="h-12 w-20 text-slate-300" />
                   </div>
-                  <br></br>
-                  {/* Username + Dropdown */}
-                  <div className="col-span-2 space-y-4">
-                    <div className="flex flex-col gap-2">
-                      <h3 className="text-white text-lg font-semibold">
-                        {user ? user.name : "Loading..."}
-                      </h3>
-                      <p className="text-sm text-slate-300">
-                        Select your rule to categorize your spends
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <Select value={rule} onValueChange={setRule}>
-                        <SelectTrigger className="w-[320px] bg-slate-900 text-white border-slate-800">
-                          <SelectValue placeholder="Select a rule" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-900 text-white border-slate-700">
-                          <SelectItem value="50-30-20">50-30-20 Rule (Recommended)</SelectItem>
-                          <SelectItem value="custom">Custom Rule</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Button
-                        onClick={gotoNext}
-                        className=" bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold mt-3"
-                      >
-                        Next
-                      </Button>
-                    </div>
-
+                </div>
+                <div className="col-span-2 space-y-4">
+                  <div>
+                    <h3 className="text-white text-lg font-semibold">{user?.name||"Loading..."}</h3>
+                    <p className="text-sm text-slate-300">Select your rule to categorize your spends</p>
                   </div>
+                  <Select value={rule} onValueChange={setRule}>
+                    <SelectTrigger className="w-[320px] bg-slate-900 text-white border-slate-800">
+                      <SelectValue placeholder="Select a rule" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 text-white border-slate-700">
+                      {RULES.map(r => <SelectItem key={r.key} value={r.key}>{r.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={gotoNext} className="mt-3 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold">Next</Button>
                 </div>
               </CardContent>
             </Card>
           </section>
         )}
 
-        {/* -------- STEP 2 -------- */}
+        {/* -------- STEP 2 (DEFAULT) -------- */}
         {activeStep === 2 && (
           <section id="step2">
             <StepHeader step={2} title="Income & High-level Allocations" />
@@ -345,7 +382,122 @@ export default function BudgetOnboardingSinglePage() {
                   <Button variant="outline" onClick={gotoPrev} className="border-slate-700 text-white-200 hover:bg-red-800">
                     Back
                   </Button>
-                  <Button
+                  <Button onClick={gotoNext} className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold">
+                    Next
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* -------- STEP 3 (CUSTOM PLAN UI) -------- */}
+        {activeStep === 3 && (
+          <section id="step3">
+            <StepHeader step={3} title="Create Your Custom Plan" />
+            <Card className={`${PANEL_BG} border-slate-400`}>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className={`${MUTED}`}>Plan Name</Label>
+                        <Input
+                          placeholder="E.g My Budget"
+                          value={planName}
+                          onChange={(e) => setPlanName(e.target.value)}
+                          className="mt-2 bg-slate-900 text-slate-100 border-slate-800"
+                        />
+                      </div>
+                      <div>
+                        <Label className={`${MUTED}`}>Total Budget</Label>
+                        <Input
+                          type="number"
+                          placeholder="24000"
+                          value={totalBudget}
+                          onChange={(e) => setTotalBudget(Number(e.target.value || 0))}
+                          className="mt-2 bg-slate-900 text-slate-100 border-slate-800"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <Label className={`${MUTED}`}>Add Expense Categories</Label>
+                      <div className="space-y-3 mt-3">
+                        {customCategories.map((c) => (
+                          <div key={c.id} className="grid grid-cols-12 gap-3 items-center">
+                            <div className="col-span-7">
+                              <Input
+                                placeholder="Category"
+                                value={c.name}
+                                onChange={(e) => updateCustomCategory(c.id, "name", e.target.value)}
+                                className="bg-slate-900 text-slate-100 border-slate-800"
+                              />
+                            </div>
+                            <div className="col-span-4">
+                              <Input
+                                type="number"
+                                placeholder="9999"
+                                value={c.limit}
+                                onChange={(e) => updateCustomCategory(c.id, "limit", Number(e.target.value || 0))}
+                                className="bg-slate-900 text-slate-100 border-slate-800"
+                              />
+                            </div>
+                            <div className="col-span-1 flex justify-end">
+                              <Button variant="ghost" onClick={() => removeCustomCategory(c.id)} className="h-9 w-9 text-slate-400">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-4">
+                        <Button onClick={addCustomCategory} className="w-full bg-slate-700 hover:bg-slate-600 text-slate-100">
+                          Add Category
+                        </Button>
+                      </div>
+
+                      <div className="mt-4 text-sm text-slate-300">
+                        <div>Allocated total: <span className="font-semibold text-slate-100">{currency(customSum)}</span></div>
+                        <div className={`mt-1 ${customSum > totalBudget ? "text-rose-400" : "text-amber-300"}`}>
+                          {Math.round(totalBudget ? (customSum / totalBudget) * 100 : 0)}% of total budget allocated
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* right column preview */}
+                  <div className="lg:col-span-1">
+                    <Card className="bg-slate-900/40 border-slate-700">
+                      <CardHeader>
+                        <CardTitle className="text-slate-100">Preview</CardTitle>
+                        <CardDescription className={`${MUTED}`}>Plan & category allocation</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-slate-300 mb-3">
+                          <div>Plan: <span className="text-slate-100 font-medium">{planName || "Custom Plan"}</span></div>
+                          <div className="mt-2">Total: <span className="text-slate-100 font-medium">{currency(totalBudget)}</span></div>
+                        </div>
+                        <div className="space-y-2">
+                          {customCategories.map((c, idx) => (
+                            <div key={c.id} className="flex justify-between items-center text-sm">
+                              <div className="text-slate-300">{c.name || `Category ${idx + 1}`}</div>
+                              <div className="text-slate-100">{currency(Number(c.limit) || 0)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <Button variant="outline" onClick={gotoPrev} className="border-slate-700 text-white-200 hover:bg-red-800">
+                    Back
+                  </Button>
+
+                   <Button
                     onClick={gotoNext}
                     className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold"
                   >
@@ -357,21 +509,19 @@ export default function BudgetOnboardingSinglePage() {
           </section>
         )}
 
-        {/* -------- STEP 3 -------- */}
-        {activeStep === 3 && (
-          <section id="step3">
-            <StepHeader step={3} title="Your Budget Overview" />
+        {/* -------- STEP 4 (Overview - shared) -------- */}
+        {activeStep === 4 && (
+          <section id="step4">
+            <StepHeader step={4} title="Your Budget Overview" />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className={`${PANEL_BG} border-slate-800`}>
                 <CardHeader>
-                  <CardTitle className="text-slate-100">
-                    {selectedRule.name} Breakdown
-                  </CardTitle>
+                  <CardTitle className="text-slate-100">{selectedRule.name} Breakdown</CardTitle>
                   <CardDescription className={`${MUTED}`}>{currency(income)} Total Budget</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="w-full max-w-md mx-auto">
-                    <Doughnut 
+                    <Doughnut
                       data={chartData}
                       options={{
                         plugins: { legend: { display: false } },
@@ -459,13 +609,10 @@ export default function BudgetOnboardingSinglePage() {
                   </Table>
                 </CardContent>
                 <CardFooter className="justify-between">
-                 <Button variant="outline" onClick={gotoPrev} className="border-slate-700 text-white-200 hover:bg-red-800">
+                  <Button variant="outline" onClick={gotoPrev} className="border-slate-700 text-white-200 hover:bg-red-800">
                     Back
                   </Button>
-                  <Button
-                    onClick={gotoNext}
-                    className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold"
-                  >
+                  <Button onClick={gotoNext} className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold">
                     Next
                   </Button>
                 </CardFooter>
@@ -474,35 +621,26 @@ export default function BudgetOnboardingSinglePage() {
           </section>
         )}
 
-        {/* -------- STEP 4 -------- */}
-        {activeStep === 4 && (
-          <section id="step4">
-            <StepHeader step={4} title="All Set!" />
+        {/* -------- STEP 5 (Finish) -------- */}
+        {activeStep === 5 && (
+          <section id="step5">
+            <StepHeader step={5} title="All Set!" />
             <Card className={`${PANEL_BG} border-slate-800 overflow-hidden`}>
               <CardContent className="p-0">
                 <div className="p-6">
                   <div className="rounded-xl bg-slate-800/60 h-36 flex flex-col items-center justify-center">
                     <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-                    <p className="mt-3 text-slate-100 font-medium">
-                      You have successfully set up your account…
-                    </p>
+                    <p className="mt-3 text-slate-100 font-medium">You have successfully set up your account…</p>
                     <p className="text-slate-400 text-sm">
                       Income: <span className="text-slate-200 font-medium">{currency(income)}</span> • Rule:{" "}
                       <span className="text-slate-200 font-medium">{selectedRule.name}</span>
                     </p>
                   </div>
                   <div className="mt-6 flex justify-between">
-                    <Button
-                      variant="outline"
-                      onClick={() => setActiveStep(1)}
-                      className="border-slate-700 text-white-200 hover:bg-red-800"
-                    >
+                    <Button variant="outline" onClick={() => setActiveStep(1)} className="border-slate-700 text-white-200 hover:bg-red-800">
                       Restart
                     </Button>
-                    <Button
-                      className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold"
-                      onClick={() => navigate("/dashboard")}
-                    >
+                    <Button className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold" onClick={() => navigate("/dashboard")}>
                       Go to Dashboard
                     </Button>
                   </div>

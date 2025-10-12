@@ -1,5 +1,5 @@
 import express from "express";
-import { saveBudget, getMyBudget } from "../controllers/budget.controller.js";
+import { saveBudget, getMyBudget, } from "../controllers/budget.controller.js";
 import { authenticate } from "../middleware/authenticate.js";
 
 const budgetRoutes = express.Router();

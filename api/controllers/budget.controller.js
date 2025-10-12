@@ -1,12 +1,12 @@
 import Budget from "../models/budget.model.js"
 
 // ✅ Save a new budget (or update if same month/year exists)
-export const saveBudget = async (req, res) => {
+export const saveBudget = async (req, res , next) => {
   try {
     const { income, rule, customSplits, totals, categories, title, period } = req.body;
 
     if (!period || !period.month || !period.year) {
-      return res.status(400).json({ success: false, message: "Month and year are required" });
+      return next(handleError(400,"Month and year are required" ));
     }
 
     const budget = await Budget.findOneAndUpdate(
@@ -17,7 +17,8 @@ export const saveBudget = async (req, res) => {
 
     res.json({ success: true, budget });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+     return next(handleError(400,"Data not found"))
+    // res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -27,7 +28,7 @@ export const getMyBudget = async (req, res) => {
     const { month, year } = req.query;
 
     if (!month || !year) {
-      return res.status(400).json({ success: false, message: "Month and year are required" });
+      return next(handleError(400, "Month and year are required" ));
     }
 
     const budget = await Budget.findOne({
@@ -37,12 +38,12 @@ export const getMyBudget = async (req, res) => {
     });
 
     if (!budget) {
-      return res.status(404).json({ success: false, message: "Budget not found" });
+      return next(handleError(400, "Budget not found" ));
     }
 
     res.json({ success: true, budget });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    return next(handleError(400,"Data not found"))
   }
 };
 
@@ -56,6 +57,6 @@ export const getAllBudgets = async (req, res) => {
 
     res.json({ success: true, budgets });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    return next(handleError(400,"Budget not found"))
   }
 };
