@@ -7,6 +7,7 @@ import Success from './components/LogoutSuccess'
 import BudgetOnboardingPage from './components/AccountSetup'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPasswordSuccess from './components/ResetPasswordSuccess'
+import Dashboard from './pages/Dashboard'
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/reset-password-success" element={<ResetPasswordSuccess />} />
         <Route path="/Success" element={<Success />} />
         <Route path="/AccountSetup" element={<BudgetOnboardingPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
   )
