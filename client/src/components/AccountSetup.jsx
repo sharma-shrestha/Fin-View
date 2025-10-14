@@ -215,16 +215,16 @@ export default function BudgetOnboardingSinglePage() {
 
   const deriveSplitsFromCustom = (incomeVal, cats) => {
     const inc = Number(incomeVal) || 0;
-    const needsSum = cats.filter(c => ESSENTIAL_KEYWORDS.some(k => c.name?.toLowerCase().includes(k))).reduce((s,c) => s + (Number(c.limit)||0),0);
-    const wantsSum = cats.filter(c => !ESSENTIAL_KEYWORDS.some(k => c.name?.toLowerCase().includes(k))).reduce((s,c) => s + (Number(c.limit)||0),0);
-    let needsPct = inc ? Math.round((needsSum/inc)*100) : 0;
-    let wantsPct = inc ? Math.round((wantsSum/inc)*100) : 0;
+    const needsSum = cats.filter(c => ESSENTIAL_KEYWORDS.some(k => c.name?.toLowerCase().includes(k))).reduce((s, c) => s + (Number(c.limit) || 0), 0);
+    const wantsSum = cats.filter(c => !ESSENTIAL_KEYWORDS.some(k => c.name?.toLowerCase().includes(k))).reduce((s, c) => s + (Number(c.limit) || 0), 0);
+    let needsPct = inc ? Math.round((needsSum / inc) * 100) : 0;
+    let wantsPct = inc ? Math.round((wantsSum / inc) * 100) : 0;
     let savingsPct = Math.max(0, 100 - (needsPct + wantsPct));
 
     if (needsPct + wantsPct + savingsPct > 100) {
       const scale = 100 / (needsPct + wantsPct + savingsPct);
-      needsPct = Math.round(needsPct*scale);
-      wantsPct = Math.round(wantsPct*scale);
+      needsPct = Math.round(needsPct * scale);
+      wantsPct = Math.round(wantsPct * scale);
       savingsPct = 100 - (needsPct + wantsPct);
     }
 
@@ -248,7 +248,7 @@ export default function BudgetOnboardingSinglePage() {
         const newCats = customCategories.map((c, idx) => ({
           key: (c.name || `cat-${idx}`).toLowerCase().replace(/\s+/g, "-") + "-" + idx,
           name: c.name || `Category ${idx + 1}`,
-          pct: Math.round(((Number(c.limit)||0)/inc)*100),
+          pct: Math.round(((Number(c.limit) || 0) / inc) * 100),
         }));
 
         setIncome(inc);
@@ -261,31 +261,42 @@ export default function BudgetOnboardingSinglePage() {
 
     if (activeStep === 4) {
       const today = new Date();
+
+      // ✅ Calculate amount for each category before saving
+      const categoriesWithAmount = categories.map((c) => ({
+        ...c,
+        amount: Math.round(((Number(c.pct) || 0) / 100) * Number(income || 0)),
+      }));
+
+      // ✅ Optional: calculate total
+      const totalAmount = categoriesWithAmount.reduce((sum, c) => sum + c.amount, 0);
+
       const payload = {
-        title: `${today.toLocaleString("default",{month:"long"})} ${today.getFullYear()} Budget`,
+        title: `${today.toLocaleString("default", { month: "long" })} ${today.getFullYear()} Budget`,
         income,
         rule,
         customSplits,
-        totals,
-        categories,
-        period: { month: today.getMonth()+1, year: today.getFullYear() },
+        totals: { ...totals, total: totalAmount },
+        categories: categoriesWithAmount,
+        period: { month: today.getMonth() + 1, year: today.getFullYear() },
       };
+
       await saveBudgetToBackend(payload);
       return setActiveStep(5);
     }
-  };
+  }
 
   const gotoPrev = () => {
-    if ([2,3].includes(activeStep)) return setActiveStep(1);
-    if (activeStep === 4) return setActiveStep(rule==="custom"?3:2);
+    if ([2, 3].includes(activeStep)) return setActiveStep(1);
+    if (activeStep === 4) return setActiveStep(rule === "custom" ? 3 : 2);
     if (activeStep === 5) return setActiveStep(4);
-    return setActiveStep((s)=>Math.max(1,s-1));
+    return setActiveStep((s) => Math.max(1, s - 1));
   };
 
   const StepHeader = ({ step, title }) => (
     <div className="mb-4">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white" onClick={gotoPrev} disabled={activeStep===1}>
+        <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white" onClick={gotoPrev} disabled={activeStep === 1}>
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-green-400 text-xl font-semibold">{title}</h2>
@@ -302,7 +313,7 @@ export default function BudgetOnboardingSinglePage() {
     <div className={`${SECTION_BG} min-h-screen w-full py-8 px-4 md:px-8`}>
       <div className="mx-auto max-w-6xl space-y-10">
         {/* STEP 1 */}
-        {activeStep===1 && (
+        {activeStep === 1 && (
           <section>
             <StepHeader step={1} title="Let’s set up your account" />
             <Card className={`${PANEL_BG} border-slate-400`}>
@@ -314,7 +325,7 @@ export default function BudgetOnboardingSinglePage() {
                 </div>
                 <div className="col-span-2 space-y-4">
                   <div>
-                    <h3 className="text-white text-lg font-semibold">{user?.name||"Loading..."}</h3>
+                    <h3 className="text-white text-lg font-semibold">{user?.name || "Loading..."}</h3>
                     <p className="text-sm text-slate-300">Select your rule to categorize your spends</p>
                   </div>
                   <Select value={rule} onValueChange={setRule}>
@@ -497,7 +508,7 @@ export default function BudgetOnboardingSinglePage() {
                     Back
                   </Button>
 
-                   <Button
+                  <Button
                     onClick={gotoNext}
                     className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold"
                   >
