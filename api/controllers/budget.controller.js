@@ -23,7 +23,7 @@ export const saveBudget = async (req, res , next) => {
 };
 
 // ✅ Get logged-in user's budget for a given month/year
-export const getMyBudget = async (req, res) => {
+export const getMyBudget = async (req, res , next) => {
   try {
     const { month, year } = req.query;
 
@@ -48,7 +48,7 @@ export const getMyBudget = async (req, res) => {
 };
 
 // ✅ Get all budgets for logged-in user
-export const getAllBudgets = async (req, res) => {
+export const getAllBudgets = async (req, res , next) => {
   try {
     const budgets = await Budget.find({ user: req.user._id }).sort({
       "period.year": -1,

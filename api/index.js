@@ -26,8 +26,10 @@ app.use("/api/users", UserRoute);
 app.use("/api/budget", budgetRoutes);
 
 mongoose.connect(process.env.MONGO_URI,{dbName: "Fine-View"})
-.then(() => console.log("DB connected"))
-.catch((err) => console.log(err))
+.then(() => console.log("✅ Database connected"))
+.catch((err) => {
+    console.error('❌ Database connection failed:', err.message);
+})
 
 
 
@@ -45,5 +47,5 @@ app.use((err, req, res, next) => {
 
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
+  console.log(`🚀 Server is running on port ${PORT}`)
 })

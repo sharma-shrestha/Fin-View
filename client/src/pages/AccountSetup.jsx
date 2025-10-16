@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -51,6 +51,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { getEnv } from "@/helpers/getEnv";
+import { showToast } from "@/helpers/showToast";
 
 // ===== Helper functions =====
 const currency = (n) =>
@@ -105,11 +106,14 @@ async function saveBudgetToBackend(budget) {
       body: JSON.stringify(budget),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to save budget");
+    if (!res.ok)
+        return showToast("error", data.message || "Failed to apply leave");
+
+      showToast("success", data.message || "Leave applied successfully");
     return data;
+    navigate("/dashboard");
   } catch (err) {
-    console.error(err);
-    alert("❌ Error saving budget: " + err.message);
+    showToast("error", err.message || "Server error");
   }
 }
 
