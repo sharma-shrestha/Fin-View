@@ -261,6 +261,15 @@ export default function BudgetOnboardingSinglePage() {
 
     if (activeStep === 4) {
       const today = new Date();
+      // ✅ Calculate amount for each category before saving
+      const categoriesWithAmount = categories.map((c) => ({
+        ...c,
+        amount: Math.round(((Number(c.pct) || 0) / 100) * Number(income || 0)),
+      }));
+
+      // ✅ Optional: calculate total
+      const totalAmount = categoriesWithAmount.reduce((sum, c) => sum + c.amount, 0);
+
       const payload = {
         title: `${today.toLocaleString("default",{month:"long"})} ${today.getFullYear()} Budget`,
         income,
