@@ -109,9 +109,8 @@ async function saveBudgetToBackend(budget) {
     if (!res.ok)
         return showToast("error", data.message || "Failed to apply leave");
 
-      showToast("success", data.message || "Leave applied successfully");
+      showToast("success", data.message || "Account Setup successfully");
     return data;
-    navigate("/dashboard");
   } catch (err) {
     showToast("error", err.message || "Server error");
   }

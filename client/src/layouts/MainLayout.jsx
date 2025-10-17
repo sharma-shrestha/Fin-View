@@ -4,12 +4,12 @@ import { Outlet } from "react-router-dom";
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Fixed Topbar */}
+    <div className="min-h-screen bg-[#0f172a] text-[#3AAFA9]">
+      {/* Topbar (not fixed now) */}
       <Topbar />
 
       {/* Main Content */}
-      <main className="pt-4 px-4 sm:px-6 lg:px-8">
+      <main className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="w-full max-w-7xl mx-auto">
           <Outlet />
         </div>

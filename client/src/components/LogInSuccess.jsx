@@ -1,33 +1,34 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from './ui/card';
-import { IoIosLogOut } from "react-icons/io";
-import { Button } from './ui/button';
+// src/pages/Success.jsx
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const LogoutSuccess = () => {
- const navigate = useNavigate();
+const Success = () => {
+  const navigate = useNavigate();
 
   return (
     <div>
       <Card className="w-[380px] rounded-2xl shadow-lg bg-[#121a2a] text-center text-white border border-gray-400">
         <CardContent className="flex flex-col items-center space-y-6 py-10">
           {/* Success Icon */}
-          <IoIosLogOut className="w-20 h-20 text-red-400" />
+          <CheckCircle2 className="w-20 h-20 text-teal-400" />
 
           {/* Title & Subtitle */}
           <div>
-            <h2 className="text-2xl font-semibold">You’ve been logged out!</h2>
+            <h2 className="text-2xl font-semibold">You’re in!</h2>
             <p className="text-gray-400 text-sm mt-1">
-              come back soon to stay top of your finances.
+              Loading your financial overview...
             </p>
           </div>
 
           {/* Dashboard Button */}
           <Button
             className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/AccountSetup")}
           >
-            Login Again
+            Go to Account Setup
           </Button>
         </CardContent>
       </Card>
@@ -35,4 +36,4 @@ const LogoutSuccess = () => {
   );
 };
 
-export default LogoutSuccess
+export default Success;

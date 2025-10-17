@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { SiGooglehome } from "react-icons/si";
-import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getEnv } from "@/helpers/getEnv";
@@ -10,102 +9,99 @@ import { MdOutlineMapsHomeWork } from "react-icons/md";
 
 const Topbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
- const user = useSelector((state) => state.user)
-//    const dispatch = useDispatch();
-//    const navigate = useNavigate();
-//    const handleLogout = async() => {
-//        try {
-//            const response = await fetch(`${getEnv("VITE_API_URL")}/auth/logout`, {
-//              method: "get",
-//              credentials: "include", // important for cookie-based auth
-//            });
-     
-//            const data = await response.json();
-     
-//            if (!response.ok) {
-//              return showToast("error", data.message);
-//            }
-     
-//            // ✅ Save user in Redux
-//            dispatch(removeUser());
-//            navigate("/login");
-//            // ✅ Show success message
-//            showToast("success", data.message);
-//          } catch (err) {
-//            showToast("error", err.message || "Server error");
-//          }
-//    }
- 
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${getEnv("VITE_API_URL")}/auth/logout`, {
+        method: "get",
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return showToast("error", data.message);
+      }
+
+      dispatch(removeUser());
+      navigate("/LogoutSuccess");
+      showToast("success", data.message);
+    } catch (err) {
+      showToast("error", err.message || "Server error");
+    }
+  };
 
   return (
-    <header className="bg-white shadow border-b px-6 py-4 relative z-50">
+    <header className="w-full bg-[#0f172a] border-b border-[#475569] text-[#3AAFA9] px-6 py-3 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <div className="text-xl sm:text-2xl font-bold text-teal-700 flex items-center gap-2">
-          <MdOutlineMapsHomeWork className="w-6 h-6 sm:w-7 sm:h-7" />
-          <span className="hidden sm:inline">FinView</span>
-          <span className="sm:hidden">FinView</span>
+        <div
+          className="text-2xl font-bold text-[#e5e9e9] flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/dashboard")}
+        >
+          <MdOutlineMapsHomeWork className="w-6 h-6 text-[#3AAFA9]" />
+          <span>FinView</span>
         </div>
 
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-2xl text-teal-700 focus:outline-none"
+          className="md:hidden text-[#3AAFA9] text-2xl focus:outline-none"
           aria-label="Toggle Menu"
         >
           {menuOpen ? <FaTimes /> : <FaBars />}
         </button>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex space-x-6 text-gray-700 font-medium items-center">
+        <ul className="hidden md:flex items-center space-x-8 font-medium">
           <Link to="/dashboard">
-            <li className="hover:text-teal-600 cursor-pointer transition-colors">
-              Dashboard
-            </li>
+            <li className="hover:text-white transition">Dashboard</li>
           </Link>
-          <Link to="/dashboard/timeline">
-            <li className="hover:text-teal-600 cursor-pointer transition-colors">
-              Transactions
-            </li>
+          <Link >
+            <li className="hover:text-white transition">Transactions</li>
           </Link>
-          <Link to="/dashboard/notifications">
-            <li className="hover:text-teal-600 cursor-pointer transition-colors">
-              Analytics
-            </li>
+          <Link >
+            <li className="hover:text-white transition">Analytics</li>
           </Link>
-          <Link to="/dashboard/profile">
-            <li className="hover:text-teal-600 cursor-pointer transition-colors">
-              Profile
-            </li>
+          <Link >
+            <li className="hover:text-white transition">Profile</li>
           </Link>
-          <div >
-            <button onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition-colors duration-200 px-4 py-2.5">
-              Log out
-            </button>
-          </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1 bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition"
+          >
+            Log out
+          </button>
         </ul>
       </div>
 
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
-        <ul className="md:hidden mt-4 flex flex-col space-y-3 text-gray-700 font-medium bg-white border rounded-lg shadow-md p-4">
+        <ul className="md:hidden mt-3 flex flex-col space-y-3 text-[#e5e9e9] font-medium bg-[#1e293b] border border-[#475569] rounded-lg shadow-lg p-4">
           <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
-            <li className="hover:text-teal-600 transition">Dashboard</li>
+            <li className="hover:text-[#3AAFA9] transition">Dashboard</li>
           </Link>
-          <Link to="/dashboard/applyleave" onClick={() => setMenuOpen(false)}>
-            <li className="hover:text-teal-600 transition">Transactions</li>
+          <Link  onClick={() => setMenuOpen(false)}>
+            <li className="hover:text-[#3AAFA9] transition">Transactions</li>
           </Link>
-          <Link to="/dashboard/timeline" onClick={() => setMenuOpen(false)}>
-            <li className="hover:text-teal-600 transition"> Analytics</li>
+          <Link  onClick={() => setMenuOpen(false)}>
+            <li className="hover:text-[#3AAFA9] transition">Analytics</li>
           </Link>
-          <Link to="/dashboard/profile" onClick={() => setMenuOpen(false)}>
-            <li className="hover:text-teal-600 transition">Profile</li>
+          <Link  onClick={() => setMenuOpen(false)}>
+            <li className="hover:text-[#3AAFA9] transition">Profile</li>
           </Link>
-          <div >
-            <button onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition-colors duration-200 px-4 py-2.5">
+
+          <div className="pt-2 border-t border-[#475569]">
+            <button
+              onClick={() => {
+                handleLogout();
+                setMenuOpen(false);
+              }}
+              className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2.5 transition"
+            >
               Log out
             </button>
           </div>
