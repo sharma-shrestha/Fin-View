@@ -40,6 +40,18 @@ const userSchema = new mongoose.Schema({
     type: Date,
     trim: true
   },
+  country: {
+    type: String,
+    trim: true
+  },
+  state: {
+    type: String,
+    trim: true
+  },
+  dob: {
+    type: Date,
+    trim: true
+  },
 });
 
 const User = mongoose.model("User", userSchema, "users");

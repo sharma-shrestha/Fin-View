@@ -6,6 +6,7 @@ import { getEnv } from "@/helpers/getEnv";
 import { showToast } from "@/helpers/showToast";
 import { removeUser } from "@/redux/user/user.slice";
 import { MdOutlineMapsHomeWork } from "react-icons/md";
+import { IoMdNotificationsOutline } from "react-icons/io";
 
 const Topbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,7 +66,10 @@ const Topbar = () => {
           <Link >
             <li className="hover:text-white transition">Analytics</li>
           </Link>
-          <Link >
+          <Link to="/dashboard/notifications">
+            <li className="hover:text-white transition"><IoMdNotificationsOutline className="sm:w-5 sm:h-5" /></li>
+          </Link>
+          <Link to="/dashboard/profile">
             <li className="hover:text-white transition">Profile</li>
           </Link>
 
@@ -90,7 +94,10 @@ const Topbar = () => {
           <Link  onClick={() => setMenuOpen(false)}>
             <li className="hover:text-[#3AAFA9] transition">Analytics</li>
           </Link>
-          <Link  onClick={() => setMenuOpen(false)}>
+          <Link to="/dashboard/notifications">
+            <li className="hover:text-white transition"><IoMdNotificationsOutline className="sm:w-5 sm:h-5" /></li>
+          </Link>
+          <Link to="/dashboard/profile">
             <li className="hover:text-[#3AAFA9] transition">Profile</li>
           </Link>
 

@@ -10,6 +10,8 @@ import BudgetOnboardingSinglePage from './pages/AccountSetup'
 import MainLayout from './layouts/MainLayout'
 import Dashboard from './pages/Dashboard'
 import LogoutSuccess from './components/LogoutSuccess'
+import NotificationsPage from './Notification/Notification'
+import ProfilePage from './pages/Profile'
 
 const App = () => {
   return (
@@ -26,6 +28,8 @@ const App = () => {
 
       <Route path="/dashboard" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
+        <Route path="/dashboard/notifications" element={<NotificationsPage />} />
+        <Route path="/dashboard/profile" element={<ProfilePage />} />
       </Route>
     </Routes>
   )

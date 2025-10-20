@@ -48,7 +48,7 @@ const Dashboard = () => {
   }, [user]);
 
   const handleAddExpense = () => {
-    window.location.href = "/add-expense";
+    window.location.href = "/AccountSetup";
   };
 
   // ====== Loading & Error States ======

@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { getEnv } from "@/helpers/getEnv";
 import { showToast } from "@/helpers/showToast";
+import { data } from "autoprefixer";
 
 // ===== Helper functions =====
 const currency = (n) =>
@@ -96,7 +97,6 @@ async function getCurrentUser() {
     return null;
   }
 }
-
 async function saveBudgetToBackend(budget) {
   try {
     const res = await fetch(`${getEnv("VITE_API_URL")}/budget/save`, {
