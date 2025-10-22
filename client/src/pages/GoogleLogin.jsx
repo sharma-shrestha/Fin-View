@@ -29,8 +29,7 @@ const GoogleLogin = () => {
         avatar: user.photoURL,
       };
 
-      const response = await fetch(
-        `${getEnv("VITE_API_URL")}/auth/google-login`,
+      const response = await fetch(`${getEnv("VITE_API_URL")}/auth/google-login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -71,16 +70,6 @@ const GoogleLogin = () => {
         <FcGoogle />
         {loading ? "Loading..." : "Continue with Google"}
       </Button>
-
-      {/* ✅ Show Profile Popup only for normal users */}
-      {/* {showProfilePopup && (
-        <ProfilePopup
-          onClose={() => {
-            setShowProfilePopup(false);
-            navigate("/dashboard");
-          }}
-        />
-      )} */}
     </>
   );
 };

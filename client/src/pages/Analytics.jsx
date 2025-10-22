@@ -14,6 +14,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { getEnv } from "@/helpers/getEnv";
 
 const COLORS = [
   "#3B82F6",
@@ -29,8 +30,7 @@ const COLORS = [
 // Fetch Budget Data
 async function fetchBudgetFromBackend(month, year) {
   try {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/budget/me?month=${month}&year=${year}`,
+    const res = await fetch(`${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`,
       { credentials: "include" }
     );
     const data = await res.json();

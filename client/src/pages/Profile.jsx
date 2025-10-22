@@ -43,8 +43,7 @@ const Profile = () => {
     const year = today.getFullYear();
 
     try {
-      const res = await fetch(
-        `${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`,
+      const res = await fetch(`${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`,
         { credentials: "include" }
       );
       const data = await res.json();

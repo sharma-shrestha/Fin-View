@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -107,9 +107,9 @@ async function saveBudgetToBackend(budget) {
     });
     const data = await res.json();
     if (!res.ok)
-        return showToast("error", data.message || "Failed to apply leave");
+      return showToast("error", data.message || "Failed to apply leave");
 
-      showToast("success", data.message || "Account Setup successfully");
+    showToast("success", data.message || "Account Setup successfully");
     return data;
   } catch (err) {
     showToast("error", err.message || "Server error");
@@ -118,7 +118,8 @@ async function saveBudgetToBackend(budget) {
 
 async function fetchBudgetFromBackend(month, year) {
   try {
-    const res = await fetch(`${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`, { credentials: "include" });
+    const res = await fetch(`${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`, 
+    { credentials: "include" });
     const data = await res.json();
     if (!res.ok) return null;
     return data.budget;
