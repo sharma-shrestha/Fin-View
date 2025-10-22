@@ -60,10 +60,10 @@ const Topbar = () => {
           <Link to="/dashboard">
             <li className="hover:text-white transition">Dashboard</li>
           </Link>
-          <Link >
+          {/* <Link >
             <li className="hover:text-white transition">Transactions</li>
-          </Link>
-          <Link >
+          </Link> */}
+          <Link to="/dashboard/analytics">
             <li className="hover:text-white transition">Analytics</li>
           </Link>
           <Link to="/dashboard/notifications">
@@ -88,10 +88,10 @@ const Topbar = () => {
           <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
             <li className="hover:text-[#3AAFA9] transition">Dashboard</li>
           </Link>
-          <Link  onClick={() => setMenuOpen(false)}>
+          {/* <Link  onClick={() => setMenuOpen(false)}>
             <li className="hover:text-[#3AAFA9] transition">Transactions</li>
-          </Link>
-          <Link  onClick={() => setMenuOpen(false)}>
+          </Link> */}
+          <Link to="/dashboard/analytics">
             <li className="hover:text-[#3AAFA9] transition">Analytics</li>
           </Link>
           <Link to="/dashboard/notifications">

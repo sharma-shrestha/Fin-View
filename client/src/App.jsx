@@ -12,6 +12,8 @@ import Dashboard from './pages/Dashboard'
 import LogoutSuccess from './components/LogoutSuccess'
 import NotificationsPage from './Notification/Notification'
 import ProfilePage from './pages/Profile'
+import Analytics from './pages/Analytics'
+import SmartForecasting from './pages/smartforcasting'
 
 const App = () => {
   return (
@@ -30,6 +32,8 @@ const App = () => {
         <Route index element={<Dashboard />} />
         <Route path="/dashboard/notifications" element={<NotificationsPage />} />
         <Route path="/dashboard/profile" element={<ProfilePage />} />
+        <Route path="/dashboard/analytics" element={<Analytics />} />
+        <Route path="/dashboard/smartforecasting" element={<SmartForecasting />} />
       </Route>
     </Routes>
   )

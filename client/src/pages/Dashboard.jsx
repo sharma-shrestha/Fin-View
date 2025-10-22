@@ -14,6 +14,23 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { getEnv } from "@/helpers/getEnv";
+
+// ✅ Reusable function to fetch budget from backend
+async function fetchBudgetFromBackend(month, year) {
+  try {
+    const res = await fetch(
+      `${getEnv("VITE_API_URL")}/budget/me?month=${month}&year=${year}`,
+      { credentials: "include" }
+    );
+    const data = await res.json();
+    if (!res.ok) return null;
+    return data.budget;
+  } catch (err) {
+    console.error("Error fetching budget:", err);
+    return null;
+  }
+}
 
 const Dashboard = () => {
   const { user } = useSelector((state) => state.user);
@@ -30,13 +47,10 @@ const Dashboard = () => {
         const month = today.getMonth() + 1;
         const year = today.getFullYear();
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/budget/me?month=${month}&year=${year}`,
-          { credentials: "include" }
-        );
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.message || "Failed to fetch budget");
-        setBudget(data.budget);
+        const fetchedBudget = await fetchBudgetFromBackend(month, year);
+        if (!fetchedBudget) throw new Error("Failed to fetch budget");
+
+        setBudget(fetchedBudget);
       } catch (e) {
         setErr(e.message);
         setBudget(null);
@@ -44,7 +58,8 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-    fetchBudget();
+
+    if (user) fetchBudget();
   }, [user]);
 
   const handleAddExpense = () => {
@@ -249,25 +264,10 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    {
-                      date: "Aug 12",
-                      name: "Netflix",
-                      category: "Subscriptions",
-                      amount: -499,
-                    },
-                    {
-                      date: "Aug 13",
-                      name: "Groww",
-                      category: "Investments",
-                      amount: -2710,
-                    },
-                    {
-                      date: "Aug 16",
-                      name: "Reliance",
-                      category: "Groceries",
-                      amount: -1100,
-                    },
+                  {[ 
+                    { date: "Aug 12", name: "Netflix", category: "Subscriptions", amount: -499 },
+                    { date: "Aug 13", name: "Groww", category: "Investments", amount: -2710 },
+                    { date: "Aug 16", name: "Reliance", category: "Groceries", amount: -1100 },
                   ].map((tx, idx) => (
                     <tr key={idx} className="border-b border-gray-700">
                       <td className="py-2 text-white">{tx.date}</td>
